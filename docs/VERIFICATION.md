@@ -40,7 +40,7 @@ The released engine reported success and zero processed frames on a two-frame H.
 
 The provided PyInstaller specification built successfully with PyInstaller **6.22.3** on Linux. The resulting native application remained running after startup in an offscreen Qt smoke test, without a startup error. This validates the general bundling configuration only; it does **not** establish Windows executable compatibility.
 
-Windows packaging is supplied through `UltraEnhance.spec`, `Build-Windows.cmd`, and the optional manual GitHub Actions workflow. Build on Windows 10/11 x64 using Python 3.11 or 3.12 and test with the target GPU. Setup and Build share automatic detection for either supported runtime. The manual CI workflow covers both versions; its Windows runs remain to be performed. Uploading the repository does not trigger the manual Windows build workflow.
+Windows packaging is supplied through `UltraEnhance.spec`, `Build-Windows.cmd`, and the optional manual GitHub Actions workflow. Build on Windows 10/11 x64 using Python 3.11 or 3.12 and test with the target GPU. Setup and Build share automatic detection for either supported runtime. The CI workflow covers both versions and now runs for setup-script changes on main, as well as manual requests.
 
 ## Stages
 
@@ -64,3 +64,9 @@ Sources for engine contracts: [Real-ESRGAN CLI](https://github.com/xinntao/Real-
 The setup script now detects installed 64-bit Python 3.12 or 3.11, in that order, and can fall back to a compatible `python.exe` on PATH if the Windows launcher is absent. Build uses the same detection. Existing virtual environments are validated before use.
 
 Rechecked on CPython **3.12.14**: **18 passed, 4 skipped in 9.89 seconds**. The skipped cases require explicitly configured external AI test engines/devices; this run did not repeat those integration tests. The original real-engine results above remain the recorded integration verification. Windows batch execution still needs confirmation on the target computer.
+
+## Windows interpreter-discovery update
+
+Setup now reads installed runtimes from the launcher, both 32-bit and 64-bit Python registry views, PATH and standard installation folders. It verifies the actual interpreter version and bitness. A native file picker supports custom installations without PATH or launcher registration. Setup records attempted runtimes and failures in `setup-diagnostics.txt`, which is excluded from source control.
+
+The Windows CI workflow checks setup under Windows PowerShell 5.1, including an explicit interpreter path with Python removed from PATH and a destination directory containing spaces. It then checks automatic discovery through the .cmd launcher, runs the application test suite and packages each supported Python version. Windows CI results for this update are pending.

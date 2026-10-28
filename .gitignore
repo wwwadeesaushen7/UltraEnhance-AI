@@ -6,3 +6,4 @@ build/
 dist/
 engines/
 *.log
+setup-diagnostics.txt

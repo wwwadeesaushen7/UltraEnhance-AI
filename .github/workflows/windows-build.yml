@@ -1,6 +1,13 @@
 name: Windows desktop build
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'Setup-Windows.cmd'
+      - 'Build-Windows.cmd'
+      - 'scripts/**'
+      - '.github/workflows/windows-build.yml'
 jobs:
   build:
     runs-on: windows-latest
@@ -13,11 +20,26 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - run: python -m pip install -r requirements-dev.txt
-      - run: python -m pytest -q
+      - name: Check setup without PATH, including paths with spaces
+        shell: powershell
+        run: |
+          $pythonExe = (Get-Command python.exe).Source
+          $checkRoot = Join-Path $env:RUNNER_TEMP 'UltraEnhance setup with spaces'
+          New-Item -ItemType Directory -Path $checkRoot -Force | Out-Null
+          Copy-Item -Path scripts -Destination $checkRoot -Recurse
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          & "$checkRoot\scripts\setup-windows.ps1" -PythonPath $pythonExe -NoPrompt -VenvOnly
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & "$checkRoot\.venv\Scripts\python.exe" -c "import sys; print(sys.executable)"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Detect Python and create the project environment
+        shell: cmd
+        run: Setup-Windows.cmd --venv-only --no-prompt
+      - run: .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+      - run: .venv\Scripts\python.exe -m pytest -q
         env:
           QT_QPA_PLATFORM: offscreen
-      - run: python -m PyInstaller --noconfirm UltraEnhance.spec
+      - run: .venv\Scripts\python.exe -m PyInstaller --noconfirm UltraEnhance.spec
       - uses: actions/upload-artifact@v4
         with:
           name: UltraEnhanceAI-Windows-x64-Python-${{ matrix.python-version }}
