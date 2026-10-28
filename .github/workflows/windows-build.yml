@@ -32,7 +32,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & "$checkRoot\.venv\Scripts\python.exe" -c "import sys; print(sys.executable)"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Detect Python and create the project environment
+      - name: Create the project environment with the selected matrix version
+        shell: powershell
+        run: |
+          $pythonExe = (Get-Command python.exe).Source
+          & .\scripts\setup-windows.ps1 -PythonPath $pythonExe -VenvOnly -NoPrompt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Validate the cmd launcher and existing environment
         shell: cmd
         run: Setup-Windows.cmd --venv-only --no-prompt
       - run: .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
@@ -40,6 +46,28 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
       - run: .venv\Scripts\python.exe -m PyInstaller --noconfirm UltraEnhance.spec
+      - name: Open the packaged Windows application
+        shell: powershell
+        run: |
+          $env:ULTRAENHANCE_CONFIG_DIR = Join-Path $env:RUNNER_TEMP 'UltraEnhance packaged smoke'
+          $exe = Join-Path $PWD 'dist\UltraEnhanceAI\UltraEnhanceAI.exe'
+          $app = Start-Process -FilePath $exe -PassThru
+          try {
+            $opened = $false
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              Start-Sleep -Milliseconds 250
+              $app.Refresh()
+              if ($app.HasExited) { throw "Packaged application exited during startup: $($app.ExitCode)" }
+              if ($app.MainWindowTitle -like 'UltraEnhance AI*Local enhancement studio') {
+                Write-Host "Native application window opened: $($app.MainWindowTitle)"
+                $opened = $true
+                break
+              }
+            }
+            if (-not $opened) { throw 'The packaged application did not open its main window.' }
+          } finally {
+            if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: UltraEnhanceAI-Windows-x64-Python-${{ matrix.python-version }}
