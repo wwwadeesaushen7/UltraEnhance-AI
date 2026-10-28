@@ -4,7 +4,11 @@ A native, offline-first Windows image and video enhancement studio supporting Py
 
 This is a working source release, not a signed Windows installer. See `docs/VERIFICATION.md` for exactly what was exercised and what still needs Windows/hardware validation. Third-party engines and weights are installed separately from their official sources.
 
-## Start on Windows
+## Open the standalone Windows app
+
+Download the [verified Windows x64 app ZIP](https://github.com/wwwadeesaushen7/UltraEnhance-AI/actions/runs/40723205320/artifacts/12832171821), or choose a ZIP from the artifacts of a successful [Windows desktop build](https://github.com/wwwadeesaushen7/UltraEnhance-AI/actions/workflows/windows-build.yml). GitHub may ask you to sign in to download artifacts. Extract the entire ZIP into a folder and open **UltraEnhanceAI.exe**, keeping the `_internal` folder beside it. Python is included in this build; Setup-Windows.cmd is for running from source. Configure external AI engines and weights in Settings as described below.
+
+## Run from source on Windows
 
 1. Use **64-bit Windows 10/11** with **64-bit Python 3.12 or 3.11**. If either is already installed, keep it; no additional Python installation is needed.
 2. Extract this project to a writable folder. Double-click **Setup-Windows.cmd** to create a private virtual environment and install the Python dependencies. Setup checks the launcher, PATH, registered Python installations and standard install folders. If needed, a file picker lets you select your installed `python.exe` directly. It verifies Python 3.12/3.11 and 64-bit architecture without changing PATH or installing another runtime. Keep the `scripts` folder alongside Setup-Windows.cmd.
@@ -78,7 +82,7 @@ Tile size remains configurable in Settings. Presets keep your selected engine an
 
 Run **Build-Windows.cmd** on 64-bit Windows with Python 3.12 or 3.11. It uses the same automatic Python detection as Setup, installs development dependencies, runs tests, and invokes the supplied PyInstaller specification. Distribute the **entire** `dist/UltraEnhanceAI/` folder, not only its `.exe`. It is a windowed application and uses no terminal after installation. Engines remain separate to avoid silently redistributing their binaries/models/licenses.
 
-The optional `.github/workflows/windows-build.yml` builds separate Python 3.11 and 3.12 artifacts on `windows-latest` when run in your own repository. The workflow runs for setup-script changes pushed to main, and can also be started manually from GitHub Actions. Windows binaries cannot be built or validated on this Linux host; the spec and CI workflow are provided for the native build.
+The optional `.github/workflows/windows-build.yml` builds separate Python 3.11 and 3.12 artifacts on `windows-latest` when run in your own repository. The workflow runs for setup-script changes pushed to main, and can also be started manually from GitHub Actions. Native Windows builds are produced by GitHub Actions, using the selected Python version for each artifact. CI also checks that the packaged executable opens the main application window. See docs/VERIFICATION.md for the recorded run results.
 
 For command-line development:
 
@@ -98,7 +102,7 @@ Use `py -3.11` in the first command if your installed version is Python 3.11. If
 - RIFE uses compatible Video2X 6.x models and exact 2×/3×/4× constant FPS ratios: e.g. 15→30/60 or 30→60. 24→60 and 29.97→60 are rejected rather than silently duplicating/dropping frames. This release selects the official `rife-v4.6` model.
 - Video output is **8-bit SDR, yuv420p**. HDR/10-bit/color-managed workflows are unsupported and should use dedicated software. Image ICC profiles and metadata are not preserved; verify color-critical work externally.
 - One processing job is enforced; higher concurrency is intentionally not exposed as a nonfunctional preference.
-- Windows GPU vendors, long videos, full-resolution 4K AI, Windows packaging and installer behavior require testing on the target machine. A successful tiny software-Vulkan smoke test is not a performance benchmark or a GPU compatibility guarantee.
+- Windows GPU vendors, long videos, full-resolution 4K AI and behavior on the target machine still require hardware testing. The delivered Windows build is a portable ZIP. A successful tiny software-Vulkan smoke test is not a performance benchmark or a GPU compatibility guarantee.
 
 ## Source layout
 
