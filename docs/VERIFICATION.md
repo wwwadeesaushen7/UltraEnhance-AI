@@ -1,0 +1,60 @@
+# Verification and delivery status
+
+Verified 28 October 2026. This is a native desktop source release. No Windows executable or signed installer was produced in this Linux environment.
+
+## Environment
+
+- CPython **3.11.17**, Linux x86-64; an additional initial run used Python 3.12.
+- PySide6 / Qt **6.12.0**, Pillow **13.0.0**, OpenCV **5.0.0.93**, NumPy **2.4.6**, psutil **7.2.2**.
+- Official Real-ESRGAN NCNN Vulkan **v0.2.0** Linux executable.
+- Official Video2X **6.4.0** Linux AppImage, extracted for testing with its distributed models.
+- The environment's pre-existing **SwiftShader** software Vulkan device. No graphics driver was installed or changed.
+- System FFmpeg and FFprobe. All external engines are separate test resources and are **not included** in the project archive.
+
+## Automated results
+
+**21 passed, 1 skipped in 33.81 seconds** in the final Python 3.11 run. The skipped case requires a RIFE-compatible Vulkan device. A separate incompatibility test confirmed this environment's device fails without committing an output.
+
+The tests exercise:
+
+- Atomic settings save/load, queue persistence, interrupted-job recovery and per-job parameter snapshots.
+- Landscape/portrait/aspect-preserving/custom targets and resolution safety limits.
+- Real PNG, JPG and WebP export; alpha preservation; actual conventional adjustments.
+- Image-region processing, measured auto-enhancement recommendations and missing-AI failures.
+- **Real NCNN neural inference**, with output compared against a Lanczos result to ensure the AI path is distinct.
+- **Real Video2X neural inference** on a short B-frame input, preserving frame count and audio after lossless zero-delay preparation.
+- Real FFmpeg landscape/audio and portrait/silent exports, original FPS, conventional filters and stabilization.
+- A five-second preview generated from a six-second video, preserving audio.
+- Unsupported frame-rate conversion rejection, file collision handling and source preservation.
+- Subprocess cancellation, cancellation during a job, and temporary-output cleanup.
+- Native Qt import, analysis, automatic queue advancement through two jobs, unique exports, comparison result loading, and an actual region-preview dialog.
+- Explicit RIFE shader incompatibility failure with **no completed/partial export** committed.
+
+## Video2X compatibility finding
+
+Video2X 6.4.0's released `--no-copy-streams` flag differs from development source's separate audio/subtitle flags. Both are detected from the installed executable's help.
+
+The released engine reported success and zero processed frames on a two-frame H.264 B-frame clip. The app now detects reordered inputs and prepares a lossless zero-delay stream before AI processing. Final decoded-frame counts are checked against exact source counts when available. The same clip then exported all frames with its original audio. This is why process exit code alone is not treated as export success.
+
+## Packaging check
+
+The provided PyInstaller specification built successfully with PyInstaller **6.22.3** on Linux. The resulting native application remained running after startup in an offscreen Qt smoke test, without a startup error. This validates the general bundling configuration only; it does **not** establish Windows executable compatibility.
+
+Windows packaging is supplied through `UltraEnhance.spec`, `Build-Windows.cmd`, and the optional manual GitHub Actions workflow. Build on Windows 10/11 x64 using Python 3.11 and test with the target GPU. Uploading the repository does not trigger the manual Windows build workflow.
+
+## Stages
+
+| Stage | Implemented | Verification boundary |
+| --- | --- | --- |
+| 1 | Native dark workspace, import, drag/drop, persistent configuration, engine/hardware detection | Offscreen Qt import/export workflow; Windows device detection needs a target machine |
+| 2 | Real NCNN image inference, conventional adjustments, region preview, comparison/zoom/pan, exports | Real anime-v3 2× inference and all export formats tested; photograph x4 weights and full 4K AI were not benchmarked |
+| 3 | Video2X super-resolution, FFmpeg audio/filters/export/progress, five-second preview | Real short-clip AI and CPU pipelines tested; long-form, H.265 and 4K performance remain hardware checks |
+| 4 | Persistent sequential batch queue, reorder/cancel/retry/history, transactional exports | Queue advancement, recovery, collisions and cancellation tested |
+| 5 | Exact-multiplier Video2X RIFE adapter and conventional deshake | Deshake tested; RIFE device rejected unsupported shader capabilities. GFPGAN is not integrated |
+| 6 | Tests, Windows setup/launch/build scripts, PyInstaller spec, manual CI configuration | Python 3.11 tests and Linux packaging smoke test passed; Windows binary/installer not built here |
+
+## Remaining checks before distributing a Windows binary
+
+Use the supplied build script on Windows. Confirm image and video inference on a supported Vulkan GPU; test 4K memory consumption, long videos, H.265, RIFE 30/60 FPS, non-ASCII paths and packaging on the intended hardware. This release is 8-bit SDR, keeps a single active processing job and does not preserve subtitles or image ICC metadata. Review `THIRD_PARTY_NOTICES.md` and the exact distributions you intend to ship.
+
+Sources for engine contracts: [Real-ESRGAN CLI](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan), [Video2X](https://github.com/k4yt3x/video2x), [FFmpeg](https://ffmpeg.org/). These links document the actual engines; their capabilities are still checked locally before use.
