@@ -40,7 +40,7 @@ The released engine reported success and zero processed frames on a two-frame H.
 
 The provided PyInstaller specification built successfully with PyInstaller **6.22.3** on Linux. The resulting native application remained running after startup in an offscreen Qt smoke test, without a startup error. This validates the general bundling configuration only; it does **not** establish Windows executable compatibility.
 
-Windows packaging is supplied through `UltraEnhance.spec`, `Build-Windows.cmd`, and the optional manual GitHub Actions workflow. Build on Windows 10/11 x64 using Python 3.11 and test with the target GPU. Uploading the repository does not trigger the manual Windows build workflow.
+Windows packaging is supplied through `UltraEnhance.spec`, `Build-Windows.cmd`, and the optional manual GitHub Actions workflow. Build on Windows 10/11 x64 using Python 3.11 or 3.12 and test with the target GPU. Setup and Build share automatic detection for either supported runtime. The manual CI workflow covers both versions; its Windows runs remain to be performed. Uploading the repository does not trigger the manual Windows build workflow.
 
 ## Stages
 
@@ -58,3 +58,9 @@ Windows packaging is supplied through `UltraEnhance.spec`, `Build-Windows.cmd`, 
 Use the supplied build script on Windows. Confirm image and video inference on a supported Vulkan GPU; test 4K memory consumption, long videos, H.265, RIFE 30/60 FPS, non-ASCII paths and packaging on the intended hardware. This release is 8-bit SDR, keeps a single active processing job and does not preserve subtitles or image ICC metadata. Review `THIRD_PARTY_NOTICES.md` and the exact distributions you intend to ship.
 
 Sources for engine contracts: [Real-ESRGAN CLI](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan), [Video2X](https://github.com/k4yt3x/video2x), [FFmpeg](https://ffmpeg.org/). These links document the actual engines; their capabilities are still checked locally before use.
+
+## Python 3.12 setup compatibility update
+
+The setup script now detects installed 64-bit Python 3.12 or 3.11, in that order, and can fall back to a compatible `python.exe` on PATH if the Windows launcher is absent. Build uses the same detection. Existing virtual environments are validated before use.
+
+Rechecked on CPython **3.12.14**: **18 passed, 4 skipped in 9.89 seconds**. The skipped cases require explicitly configured external AI test engines/devices; this run did not repeat those integration tests. The original real-engine results above remain the recorded integration verification. Windows batch execution still needs confirmation on the target computer.

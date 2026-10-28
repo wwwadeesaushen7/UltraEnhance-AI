@@ -1,13 +1,13 @@
 # UltraEnhance AI
 
-A native, offline-first Windows image and video enhancement studio built with Python 3.11 and PySide6. Real-ESRGAN NCNN Vulkan performs image inference; Video2X 6.x performs streaming video inference; FFmpeg handles encoding, audio and conventional video filters. No paid APIs, accounts or subscriptions are used.
+A native, offline-first Windows image and video enhancement studio supporting Python 3.11 and 3.12 with PySide6. Real-ESRGAN NCNN Vulkan performs image inference; Video2X 6.x performs streaming video inference; FFmpeg handles encoding, audio and conventional video filters. No paid APIs, accounts or subscriptions are used.
 
 This is a working source release, not a signed Windows installer. See `docs/VERIFICATION.md` for exactly what was exercised and what still needs Windows/hardware validation. Third-party engines and weights are installed separately from their official sources.
 
 ## Start on Windows
 
-1. Use **64-bit Windows 10/11** and install **64-bit Python 3.11** from https://www.python.org/downloads/windows/.
-2. Extract this project to a writable folder. Double-click **Setup-Windows.cmd** to create a private virtual environment and install the Python dependencies.
+1. Use **64-bit Windows 10/11** with **64-bit Python 3.12 or 3.11**. If either is already installed, keep it; no additional Python installation is needed.
+2. Extract this project to a writable folder. Double-click **Setup-Windows.cmd** to create a private virtual environment and install the Python dependencies. Setup automatically tries Python 3.12, then 3.11, and can also use a compatible `python.exe` on PATH when the `py` launcher is absent.
 3. Double-click **Launch-UltraEnhance.cmd**. The application opens without a console window. Alternatively, open the project in VS Code and use the supplied **UltraEnhance desktop** debug configuration.
 4. Open **Settings & engines**. Select the official processing executables and the Real-ESRGAN models folder, then click **Save settings & check engines**.
 5. Import files, choose a processing engine and output folder, preview a region or the first five seconds, then enhance and export.
@@ -76,19 +76,21 @@ Tile size remains configurable in Settings. Presets keep your selected engine an
 
 ## Build a Windows executable
 
-Run **Build-Windows.cmd** on 64-bit Windows with Python 3.11. It installs development dependencies, runs tests, and invokes the supplied PyInstaller specification. Distribute the **entire** `dist/UltraEnhanceAI/` folder, not only its `.exe`. It is a windowed application and uses no terminal after installation. Engines remain separate to avoid silently redistributing their binaries/models/licenses.
+Run **Build-Windows.cmd** on 64-bit Windows with Python 3.12 or 3.11. It uses the same automatic Python detection as Setup, installs development dependencies, runs tests, and invokes the supplied PyInstaller specification. Distribute the **entire** `dist/UltraEnhanceAI/` folder, not only its `.exe`. It is a windowed application and uses no terminal after installation. Engines remain separate to avoid silently redistributing their binaries/models/licenses.
 
-The optional `.github/workflows/windows-build.yml` builds the same artifact on `windows-latest` when run in your own repository. The workflow runs only when manually started from GitHub Actions. Windows binaries cannot be built or validated on this Linux host; the spec and CI workflow are provided for the native build.
+The optional `.github/workflows/windows-build.yml` builds separate Python 3.11 and 3.12 artifacts on `windows-latest` when run in your own repository. The workflow runs only when manually started from GitHub Actions. Windows binaries cannot be built or validated on this Linux host; the spec and CI workflow are provided for the native build.
 
 For command-line development:
 
 ```powershell
-py -3.11 -m venv .venv
+py -3.12 -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .venv\Scripts\python.exe main.py
 .venv\Scripts\python.exe -m pytest -q
 .venv\Scripts\python.exe -m PyInstaller --noconfirm UltraEnhance.spec
 ```
+
+Use `py -3.11` in the first command if your installed version is Python 3.11.
 
 ## Current limits
 
